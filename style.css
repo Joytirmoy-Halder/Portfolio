@@ -283,6 +283,19 @@ img { max-width: 100%; display: block; }
   50% { background-position: 100% 50%; }
 }
 
+.gradient-text-vertical {
+  background: var(--gradient);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradientShiftVertical 4s ease infinite;
+}
+@keyframes gradientShiftVertical {
+  0%, 100% { background-position: 50% 0%; }
+  50% { background-position: 50% 100%; }
+}
+
 .hero-sub {
   max-width: 640px;
   margin: 0 auto 2.5rem;
@@ -670,6 +683,50 @@ img { max-width: 100%; display: block; }
 .project:hover .project-arrow {
   color: var(--accent);
   transform: translate(6px, -6px) rotate(0deg);
+}
+
+/* ============ Experience ============ */
+.experience-list { display: grid; gap: 2rem; }
+.exp-item {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  transition: transform 0.4s var(--ease), border-color 0.3s, background 0.3s;
+}
+.exp-item:hover { border-color: var(--border-strong); background: var(--surface-strong); transform: translateX(8px); }
+.exp-year { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); padding: 0.4rem 0.9rem; background: var(--bg-alt); border-radius: 100px; border: 1px solid var(--border); display: inline-block; }
+.exp-body h3 { font-size: 1.3rem; margin-bottom: 0.2rem; }
+.exp-company { font-size: 0.95rem; margin-bottom: 1rem; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+.exp-company a { color: var(--accent-2); text-decoration: underline; text-decoration-color: rgba(56, 189, 248, 0.4); text-underline-offset: 4px; transition: all 0.3s var(--ease); }
+.exp-company a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.exp-body p:last-child { color: var(--fg-muted); font-size: 0.95rem; line-height: 1.6; }
+
+@media (max-width: 600px) {
+  .exp-item { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem; }
+}
+
+/* ============ Infrastructure ============ */
+.infra-grid { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
+.infra-link {
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  transition: background 0.3s, border-color 0.3s, transform 0.4s var(--ease), color 0.3s, box-shadow 0.3s;
+}
+.infra-link:hover {
+  background: var(--surface-strong);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
 }
 
 /* ============ Contact ============ */

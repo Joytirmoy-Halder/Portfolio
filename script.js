@@ -452,9 +452,11 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* Show keyboard hint after 8s */
+/* Show keyboard hint after 8s (desktop only) */
 setTimeout(() => {
-  showToast('Tip: press D for Design, W for Work, T to toggle theme');
+  if (window.innerWidth > 768) {
+    showToast('Tip: press D for Design, W for Work, T to toggle theme');
+  }
 }, 8500);
 
 /* ============ Avatar parallax (subtle pan) ============ */
@@ -573,27 +575,12 @@ document.querySelectorAll('.mock-cta').forEach(btn => {
     setTimeout(() => {
       btn.dataset.state = 'done';
       card?.classList.remove('is-loading');
-      showToast('✓ Demo: micro-interaction complete');
+      if (window.innerWidth > 768) {
+        showToast('✓ Demo: micro-interaction complete');
+      }
       setTimeout(() => { btn.dataset.state = 'idle'; }, 1700);
     }, 1150);
   });
 });
 
-/* ============ Hero scroll-out fade ============ */
-const heroContent = document.querySelector('.hero-content');
-const heroScrollHint = document.querySelector('.scroll-hint');
-const heroEl = document.querySelector('.hero');
-if (heroContent && heroEl) {
-  window.addEventListener('scroll', () => {
-    const heroH = heroEl.offsetHeight;
-    const y = window.scrollY;
-    if (y < heroH) {
-      const t = Math.max(0, 1 - y / (heroH * 0.55));
-      heroContent.style.opacity = `${t}`;
-      if (heroScrollHint) heroScrollHint.style.opacity = `${t}`;
-    } else {
-      heroContent.style.opacity = '0';
-      if (heroScrollHint) heroScrollHint.style.opacity = '0';
-    }
-  }, { passive: true });
-}
+
