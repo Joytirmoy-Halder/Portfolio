@@ -689,7 +689,7 @@ img { max-width: 100%; display: block; }
 .experience-list { display: grid; gap: 2rem; }
 .exp-item {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  grid-template-columns: 1fr 160px;
   gap: 2rem;
   padding: 2rem;
   background: var(--surface);
@@ -698,7 +698,9 @@ img { max-width: 100%; display: block; }
   transition: transform 0.4s var(--ease), border-color 0.3s, background 0.3s;
 }
 .exp-item:hover { border-color: var(--border-strong); background: var(--surface-strong); transform: translateX(8px); }
-.exp-year { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); padding: 0.4rem 0.9rem; background: var(--bg-alt); border-radius: 100px; border: 1px solid var(--border); display: inline-block; }
+.exp-meta { order: 2; align-self: start; padding-top: 0.15rem; text-align: right; }
+.exp-body { order: 1; }
+.exp-year { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); padding: 0.4rem 0.9rem; background: var(--bg-alt); border-radius: 100px; border: 1px solid var(--border); display: inline-block; white-space: nowrap; text-align: center; }
 .exp-body h3 { font-size: 1.3rem; margin-bottom: 0.2rem; }
 .exp-company { font-size: 0.95rem; margin-bottom: 1rem; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
 .exp-company a { color: var(--accent-2); text-decoration: underline; text-decoration-color: rgba(56, 189, 248, 0.4); text-underline-offset: 4px; transition: all 0.3s var(--ease); }
