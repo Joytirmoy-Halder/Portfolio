@@ -494,9 +494,9 @@ img { max-width: 100%; display: block; }
 
 .portrait-glow {
   position: absolute; inset: 0;
-  background: var(--gradient);
-  mix-blend-mode: overlay;
-  opacity: 0.3;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--bg) 45%, transparent) 0%,
+    transparent 55%);
   pointer-events: none;
 }
 
