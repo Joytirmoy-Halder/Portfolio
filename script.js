@@ -322,7 +322,7 @@ class Scramble {
   constructor(el) {
     this.el = el;
     this.original = el.textContent;
-    this.chars = '!<>-_\\/[]{}\u2014=+*^?#________';
+    this.chars = '!<>-_\\/[]{}—=+*^?#________';
     this.queue = [];
     this.frame = 0;
     this.running = false;
@@ -429,7 +429,7 @@ document.addEventListener('keydown', (e) => {
 
   // Single-key navigation
   const map = {
-    'g': () => { window.scrollTo({ top: 0, behavior: 'smooth' }); showToast('\u2191 Top'); },
+    'g': () => { window.scrollTo({ top: 0, behavior: 'smooth' }); showToast('↑ Top'); },
     'd': () => { document.getElementById('design')?.scrollIntoView({ behavior: 'smooth' }); showToast('Design section'); },
     'w': () => { document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' }); showToast('Work section'); },
     'c': () => { document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); showToast('Contact section'); },
@@ -444,7 +444,7 @@ document.addEventListener('keydown', (e) => {
     document.body.style.animation = 'none';
     document.body.offsetHeight;
     document.body.style.animation = '';
-    showToast('\ud83c\udfa8 Design mode unlocked \u2014 keep building.');
+    showToast('🎨 Design mode unlocked — keep building.');
     document.querySelectorAll('.mock').forEach((m, i) => {
       m.style.animation = `pl-bounce 0.6s ${i * 0.1}s var(--ease)`;
       setTimeout(() => m.style.animation = '', 1200 + i * 100);
@@ -529,10 +529,10 @@ emailPop?.querySelectorAll('button[data-action]').forEach(btn => {
     if (action === 'gmail') {
       const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(EMAIL)}&su=${encodeURIComponent("Project inquiry")}`;
       window.open(url, '_blank', 'noopener,noreferrer');
-      showToast('Opening Gmail in a new tab\u2026');
+      showToast('Opening Gmail in a new tab…');
     } else if (action === 'mailto') {
       window.location.href = `mailto:${EMAIL}?subject=Project%20inquiry`;
-      showToast('Opening your default mail app\u2026');
+      showToast('Opening your default mail app…');
     } else if (action === 'copy') {
       const fallback = () => {
         const ta = document.createElement('textarea');
@@ -542,11 +542,11 @@ emailPop?.querySelectorAll('button[data-action]').forEach(btn => {
       };
       if (navigator.clipboard?.writeText) {
         navigator.clipboard.writeText(EMAIL)
-          .then(() => showToast(`\u2713 Copied ${EMAIL}`))
-          .catch(() => { fallback(); showToast(`\u2713 Copied ${EMAIL}`); });
+          .then(() => showToast(`✓ Copied ${EMAIL}`))
+          .catch(() => { fallback(); showToast(`✓ Copied ${EMAIL}`); });
       } else {
         fallback();
-        showToast(`\u2713 Copied ${EMAIL}`);
+        showToast(`✓ Copied ${EMAIL}`);
       }
     }
     setEmailPopOpen(false);
@@ -563,7 +563,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') setEmailPopOpen(false);
 });
 
-/* ============ Mock CTA: idle \u2192 loading \u2192 done micro-interaction ============ */
+/* ============ Mock CTA: idle → loading → done micro-interaction ============ */
 document.querySelectorAll('.mock-cta').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -576,7 +576,7 @@ document.querySelectorAll('.mock-cta').forEach(btn => {
       btn.dataset.state = 'done';
       card?.classList.remove('is-loading');
       if (window.innerWidth > 768) {
-        showToast('\u2713 Demo: micro-interaction complete');
+        showToast('✓ Demo: micro-interaction complete');
       }
       setTimeout(() => { btn.dataset.state = 'idle'; }, 1700);
     }, 1150);
