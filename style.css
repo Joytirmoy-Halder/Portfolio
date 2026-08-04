@@ -2,38 +2,39 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0a0a0f;
-  --bg-alt: #0f0f17;
+  --bg: #0B0B0C;
+  --bg-alt: #121213;
   --surface: rgba(255, 255, 255, 0.04);
   --surface-strong: rgba(255, 255, 255, 0.07);
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.16);
-  --fg: #f5f5f7;
-  --fg-dim: #a0a0ad;
-  --fg-muted: #6b6b78;
-  --accent: #a78bfa;
-  --accent-2: #38bdf8;
-  --accent-3: #f472b6;
-  --gradient: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #f472b6 100%);
-  --shadow-glow: 0 0 80px -10px rgba(167, 139, 250, 0.4);
+  --fg: #f4f3f1;
+  --fg-dim: #a3a19c;
+  --fg-muted: #6e6c67;
+  --accent: #e0a42b;
+  --accent-2: #c9822a;
+  --accent-3: #f0c368;
+  --gradient: linear-gradient(135deg, #c9822a 0%, #e0a42b 55%, #f0c368 100%);
+  --shadow-glow: 0 0 80px -10px rgba(224, 164, 43, 0.22);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 html[data-theme="light"] {
-  --bg: #fafafa;
-  --bg-alt: #f0f0f5;
+  --bg: #faf9f7;
+  --bg-alt: #f1efea;
   --surface: rgba(0, 0, 0, 0.03);
   --surface-strong: rgba(0, 0, 0, 0.06);
   --border: rgba(0, 0, 0, 0.08);
   --border-strong: rgba(0, 0, 0, 0.16);
-  --fg: #0a0a0f;
-  --fg-dim: #4a4a55;
-  --fg-muted: #8a8a95;
-  --accent: #7c3aed;
-  --accent-2: #0284c7;
-  --accent-3: #db2777;
-  --shadow-glow: 0 0 80px -10px rgba(124, 58, 237, 0.25);
+  --fg: #14130f;
+  --fg-dim: #4a4740;
+  --fg-muted: #8a867d;
+  --accent: #a66a0e;
+  --accent-2: #8a5510;
+  --accent-3: #c08a2a;
+  --gradient: linear-gradient(135deg, #8a5510 0%, #a66a0e 55%, #c08a2a 100%);
+  --shadow-glow: 0 0 80px -10px rgba(166, 106, 14, 0.18);
 }
 
 html { scroll-behavior: smooth; }
@@ -703,7 +704,7 @@ img { max-width: 100%; display: block; }
 .exp-year { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); padding: 0.4rem 0.9rem; background: var(--bg-alt); border-radius: 100px; border: 1px solid var(--border); display: inline-block; white-space: nowrap; text-align: center; }
 .exp-body h3 { font-size: 1.3rem; margin-bottom: 0.2rem; }
 .exp-company { font-size: 0.95rem; margin-bottom: 1rem; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
-.exp-company a { color: var(--accent-2); text-decoration: underline; text-decoration-color: rgba(56, 189, 248, 0.4); text-underline-offset: 4px; transition: all 0.3s var(--ease); }
+.exp-company a { color: var(--accent-2); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent-2) 40%, transparent); text-underline-offset: 4px; transition: all 0.3s var(--ease); }
 .exp-company a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 .exp-body p:last-child { color: var(--fg-muted); font-size: 0.95rem; line-height: 1.6; }
 
