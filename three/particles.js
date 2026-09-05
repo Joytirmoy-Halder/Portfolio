@@ -1,18 +1,22 @@
 /* ============ Morphing particle field ============
  * One THREE.Points cloud that re-forms itself into a different shape for
- * every section (cloud → wave → lattice → terrain → helix → wave → ring),
+ * every section (cloud → wave → floor → terrain → helix → wave → ring),
  * repels from the cursor, and shatters/reassembles on the "design" easter egg.
  */
 import * as THREE from 'three';
 import { Viewport, smoothstep, clamp, lerp } from './util.js';
 
 export const CONFIG = {
-  count: 2800,           // particle count (lower for weaker machines)
+  count: 2200,           // particle count (lower for weaker machines)
   followSpeed: 0.055,    // how quickly particles chase their target shape (0–1)
   repelRadius: 1.6,      // cursor repulsion radius, world units
   repelStrength: 0.9,    // cursor repulsion strength, world units
   burstDamping: 0.9,     // velocity damping after an easter-egg burst
-  baseSize: 0.05,        // world-space point size
+  baseSize: 0.042,       // world-space point size
+  opacity: 0.6,          // overall brightness, dark theme
+  opacityLight: 0.45,    // overall brightness, light theme
+  columnDim: 0.42,       // brightness multiplier behind the text column (.section)
+  columnEdge: 0.8,       // soft edge of that dimming, world units
 };
 
 const VERT = /* glsl */ `
@@ -23,12 +27,16 @@ const VERT = /* glsl */ `
   uniform float uRepelRadius;
   uniform float uRepelStrength;
   uniform float uTime;
+  uniform vec2  uColumn;      // world x-range of the text column
+  uniform float uColumnDim;
+  uniform float uColumnEdge;
   attribute float aSize;
   attribute float aColorIdx;
   attribute float aSeed;
   varying float vColorIdx;
   varying float vDepth;
   varying float vSeed;
+  varying float vDim;
 
   void main() {
     vec3 p = position;
@@ -48,6 +56,10 @@ const VERT = /* glsl */ `
     vColorIdx = aColorIdx;
     vDepth = clamp((-mv.z - 6.0) / 9.0, 0.0, 1.0);
     vSeed = aSeed;
+    // Quieter behind the text column so copy stays readable; brighter at the edges
+    float inCol = smoothstep(uColumn.x - uColumnEdge, uColumn.x + uColumnEdge, p.x)
+                * (1.0 - smoothstep(uColumn.y - uColumnEdge, uColumn.y + uColumnEdge, p.x));
+    vDim = mix(1.0, uColumnDim, inCol);
   }
 `;
 
@@ -57,6 +69,7 @@ const FRAG = /* glsl */ `
   varying float vColorIdx;
   varying float vDepth;
   varying float vSeed;
+  varying float vDim;
 
   void main() {
     vec2 uv = gl_PointCoord - 0.5;
@@ -66,7 +79,7 @@ const FRAG = /* glsl */ `
     a *= a;
     vec3 col = vColorIdx < 0.5 ? uColors[0] : (vColorIdx < 1.5 ? uColors[1] : uColors[2]);
     float fade = mix(1.0, 0.35, vDepth);
-    gl_FragColor = vec4(col, a * fade * uOpacity);
+    gl_FragColor = vec4(col, a * fade * vDim * uOpacity);
   }
 `;
 
@@ -88,7 +101,7 @@ const shapes = {
     const x = (r() - 0.5) * W * 1.1;
     const z = (r() - 0.5) * 6;
     const y = Math.sin(x * 0.9) * 0.6 + Math.cos(z * 1.3) * 0.4 + (r() - 0.5) * 0.3;
-    return [x, y - H * 0.05, z];
+    return [x, y - H * 0.3, z];
   },
   lattice(i, n, r, W, H) {
     const side = Math.ceil(Math.cbrt(n));
@@ -96,6 +109,16 @@ const shapes = {
     const s = Math.min(W, H) * 0.55;
     const c = (v) => (v / (side - 1) - 0.5) * s;
     return [c(gx), c(gy), c(gz) - 1];
+  },
+  floor(i, n, r, W, H) {
+    // Perspective grid receding under the content
+    const cols = Math.ceil(Math.sqrt(n * 2.4));
+    const rows = Math.ceil(n / cols);
+    const gx = i % cols, gz = Math.floor(i / cols);
+    const x = (gx / (cols - 1) - 0.5) * W * 1.5;
+    const z = (gz / Math.max(1, rows - 1) - 0.5) * 9;
+    const y = -H * 0.38 + Math.sin(x * 0.7 + z * 0.5) * 0.1;
+    return [x, y, z];
   },
   terrain(i, n, r, W, H) {
     const x = (r() - 0.5) * W * 1.2;
@@ -106,7 +129,7 @@ const shapes = {
   helix(i, n, r, W, H) {
     const t = (i / n) * Math.PI * 10;
     const strand = i % 2 === 0 ? 0 : Math.PI;
-    const rad = Math.min(W, H) * 0.22;
+    const rad = Math.min(W, H) * 0.17;
     const y = ((i / n) - 0.5) * H * 1.05;
     const jitter = (r() - 0.5) * 0.25;
     return [Math.cos(t + strand) * rad + jitter, y, Math.sin(t + strand) * rad - 1 + jitter];
@@ -125,16 +148,20 @@ const shapes = {
   },
 };
 
-/* Which shape each section takes. Anchors are DOM selectors (optional). */
+/* Which shape each section takes.
+ * anchor  – DOM selector the shape follows (optional)
+ * shift   – [x, y] offset as a fraction of viewport width/height (optional)
+ * opacity – per-section brightness multiplier (optional, default 1)
+ */
 const SECTION_SHAPES = [
-  { id: 'home',           shape: 'cloud' },
+  { id: 'home',           shape: 'cloud',   opacity: 0.9 },
   { id: 'about',          shape: 'wave' },
   { id: 'experience',     shape: 'wave' },
-  { id: 'skills',         shape: 'lattice' },
+  { id: 'skills',         shape: 'floor' },
   { id: 'design',         shape: 'terrain' },
-  { id: 'work',           shape: 'helix' },
-  { id: 'infrastructure', shape: 'wave' },
-  { id: 'contact',        shape: 'ring',   anchor: '.contact-inner' },
+  { id: 'work',           shape: 'helix',   shift: [0.36, 0] },
+  { id: 'infrastructure', shape: 'wave',    opacity: 0.35 },
+  { id: 'contact',        shape: 'ring',    anchor: '.contact-inner' },
 ];
 
 export class ParticleField {
@@ -184,6 +211,9 @@ export class ParticleField {
         uRepelStrength: { value: CONFIG.repelStrength },
         uTime: { value: 0 },
         uOpacity: { value: 1 },
+        uColumn: { value: new THREE.Vector2(-1e4, 1e4) },
+        uColumnDim: { value: CONFIG.columnDim },
+        uColumnEdge: { value: CONFIG.columnEdge },
         uColors: { value: [new THREE.Color(), new THREE.Color(), new THREE.Color()] },
       },
     });
@@ -209,7 +239,8 @@ export class ParticleField {
     u[1].copy(theme.accent2);
     u[2].copy(theme.accent3);
     this.material.blending = theme.isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
-    this.material.uniforms.uOpacity.value = theme.isLight ? 0.75 : 1;
+    this.baseOpacity = theme.isLight ? CONFIG.opacityLight : CONFIG.opacity;
+    this.material.uniforms.uOpacity.value = this.baseOpacity;
     this.material.needsUpdate = true;
   }
 
@@ -227,6 +258,17 @@ export class ParticleField {
     this.keyframes = [];
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
+
+    // Text column = a .section's content box (max-width 1280px, centred)
+    const sec = document.querySelector('.section');
+    if (sec) {
+      const cs = getComputedStyle(sec);
+      const sr = sec.getBoundingClientRect();
+      const left = sr.left + parseFloat(cs.paddingLeft || '0');
+      const right = sr.right - parseFloat(cs.paddingRight || '0');
+      const vw = window.innerWidth || 1;
+      this.material.uniforms.uColumn.value.set((left / vw - 0.5) * W, (right / vw - 0.5) * W);
+    }
 
     SECTION_SHAPES.forEach((def, k) => {
       const el = document.getElementById(def.id);
@@ -255,9 +297,14 @@ export class ParticleField {
   /** Anchored shapes follow their DOM element's on-screen position each frame. */
   applyAnchors() {
     for (const kf of this.keyframes) {
-      if (!kf.anchorEl) { kf.offset.set(0, 0); continue; }
-      const wr = this.viewport.rectToWorld(kf.anchorEl.getBoundingClientRect());
-      kf.offset.set(wr.x, wr.y);
+      if (kf.anchorEl) {
+        const wr = this.viewport.rectToWorld(kf.anchorEl.getBoundingClientRect());
+        kf.offset.set(wr.x, wr.y);
+      } else if (kf.def.shift) {
+        kf.offset.set(kf.def.shift[0] * this.viewport.width, kf.def.shift[1] * this.viewport.height);
+      } else {
+        kf.offset.set(0, 0);
+      }
     }
   }
 
@@ -295,6 +342,9 @@ export class ParticleField {
       }
       if (sy > kfs[kfs.length - 1].scrollAt) { a = b = kfs[kfs.length - 1]; t = 0; }
     }
+
+    // Per-section brightness (e.g. quieter behind the globe)
+    u.uOpacity.value = (this.baseOpacity ?? 1) * lerp(a.def.opacity ?? 1, b.def.opacity ?? 1, t);
 
     // Slow rotation for volumetric shapes
     const rotA = a.def.shape === 'sphere' || a.def.shape === 'lattice' || a.def.shape === 'helix' ? time * 0.15 : 0;
