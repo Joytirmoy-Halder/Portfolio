@@ -1,32 +1,14 @@
 /* ============ Motion mode (set by inline script in <head>) ============ */
 const MOTION_MODE = (window.__motion && window.__motion.mode) || 'canvas';
 
-/* ============ Custom cursor ============ */
-const dot = document.querySelector('.cursor-dot');
-const ring = document.querySelector('.cursor-ring');
-
+/* ============ Cursor ============
+ * The custom cursor (dot + ring) was removed; the native cursor is used.
+ * mouseX/mouseY are kept for other effects.
+ */
 let mouseX = 0, mouseY = 0;
-let ringX = 0, ringY = 0;
-
 document.addEventListener('mousemove', (e) => {
   mouseX = e.clientX;
   mouseY = e.clientY;
-  dot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
-});
-
-function animateRing() {
-  ringX += (mouseX - ringX) * 0.18;
-  ringY += (mouseY - ringY) * 0.18;
-  ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
-  requestAnimationFrame(animateRing);
-}
-animateRing();
-
-/* Hover state for interactive elements */
-const hoverables = document.querySelectorAll('a, button, [data-tilt], [data-magnetic]');
-hoverables.forEach(el => {
-  el.addEventListener('mouseenter', () => ring.classList.add('hover'));
-  el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
 });
 
 /* ============ Magnetic effect ============ */
