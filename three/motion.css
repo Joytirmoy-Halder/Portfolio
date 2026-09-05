@@ -1,0 +1,78 @@
+/* ============ Motion layer styles (three.js) ============
+   Loaded after style.css. Everything here is additive; removing this file
+   and the three/ folder restores the original site. */
+
+#three-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease, ease);
+}
+body.has-webgl #three-canvas { opacity: 1; }
+/* When WebGL is running, hide the old 2D particle canvas */
+body.has-webgl #bg-canvas { display: none; }
+
+/* ---- Infrastructure: pills + globe stage ---- */
+.infra-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 3rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+.infra-layout .infra-grid { margin-top: 0; }
+
+.globe-stage {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-height: 360px;
+  border-radius: 50%;
+  border: 1px dashed var(--border);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 1.25rem;
+}
+.globe-stage::before {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.globe-caption {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted, #888);
+  text-align: center;
+  position: relative;
+}
+
+/* Pills lit from the globe hover */
+.infra-link.is-lit {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* No WebGL → hide the stage, keep the pill grid as before */
+body:not(.has-webgl) .globe-stage { display: none; }
+body:not(.has-webgl) .infra-layout { display: block; }
+
+@media (max-width: 900px) {
+  .infra-layout { grid-template-columns: 1fr; gap: 2rem; }
+  .globe-stage { max-width: 320px; min-height: 280px; margin: 0 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #three-canvas { display: none !important; }
+  .globe-stage { display: none !important; }
+  .infra-layout { display: block; }
+}
