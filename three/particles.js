@@ -1,6 +1,6 @@
 /* ============ Morphing particle field ============
  * One THREE.Points cloud that re-forms itself into a different shape for
- * every section (cloud → wave → lattice → terrain → helix → globe → ring),
+ * every section (cloud → wave → lattice → terrain → helix → wave → ring),
  * repels from the cursor, and shatters/reassembles on the "design" easter egg.
  */
 import * as THREE from 'three';
@@ -133,7 +133,7 @@ const SECTION_SHAPES = [
   { id: 'skills',         shape: 'lattice' },
   { id: 'design',         shape: 'terrain' },
   { id: 'work',           shape: 'helix' },
-  { id: 'infrastructure', shape: 'sphere', anchor: '#globeStage' },
+  { id: 'infrastructure', shape: 'wave' },
   { id: 'contact',        shape: 'ring',   anchor: '.contact-inner' },
 ];
 

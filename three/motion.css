@@ -76,3 +76,8 @@ body:not(.has-webgl) .infra-layout { display: block; }
   .globe-stage { display: none !important; }
   .infra-layout { display: block; }
 }
+
+/* Native cursor restored (custom dot/ring removed) */
+html, body { cursor: auto !important; }
+a, button, [role="button"], .infra-link, .project { cursor: pointer !important; }
+.cursor-dot, .cursor-ring { display: none !important; }

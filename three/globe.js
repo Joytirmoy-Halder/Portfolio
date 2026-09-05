@@ -78,13 +78,13 @@ export class Globe {
     // Dhaka (home)
     const homePos = latLngToVec3(HOME.lat, HOME.lng, r);
     this.home = new THREE.Mesh(
-      new THREE.SphereGeometry(r * 0.035, 12, 12),
+      new THREE.SphereGeometry(r * 0.02, 12, 12),
       new THREE.MeshBasicMaterial({ color: theme.accent3 })
     );
     this.home.position.copy(homePos);
     g.add(this.home);
     this.homeGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: getGlowTexture(), color: theme.accent3, transparent: true, opacity: 0.9, depthWrite: false }));
-    this.homeGlow.scale.setScalar(r * 0.3);
+    this.homeGlow.scale.setScalar(r * 0.12);
     this.homeGlow.position.copy(homePos);
     g.add(this.homeGlow);
 
@@ -116,7 +116,7 @@ export class Globe {
 
       // Travelling packet along the arc
       const packet = new THREE.Sprite(new THREE.SpriteMaterial({ map: getGlowTexture(), color: theme.accent3, transparent: true, opacity: 0.8, depthWrite: false }));
-      packet.scale.setScalar(r * 0.09);
+      packet.scale.setScalar(r * 0.05);
       packet.userData.curve = curve;
       packet.userData.phase = Math.random();
       packet.userData.speed = 0.08 + Math.random() * 0.06;
@@ -173,7 +173,7 @@ export class Globe {
     this.wire.material.opacity = ease(this.wire.material.opacity, (this.wire.material.userData.base ?? 0.08) * (0.4 + vis * 0.6), 6, dt);
 
     // Pulse home
-    const pulse = 0.28 + Math.sin(time * 2.4) * 0.05;
+    const pulse = 0.12 + Math.sin(time * 2.4) * 0.02;
     this.homeGlow.scale.setScalar(this.radius * pulse);
 
     // Raycast markers when pointer over the stage

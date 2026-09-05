@@ -41,8 +41,8 @@ const FLUID_FRAG = /* glsl */ `
     vec2 d = uv - uMouse;
     d.x *= uAspect;
     float speed = clamp(length(uMouseVel) * 60.0, 0.0, 1.0);
-    float radius = 0.045 + speed * 0.06;
-    float s = exp(-dot(d, d) / (radius * radius)) * (0.08 + speed * 0.6);
+    float radius = 0.012 + speed * 0.018;
+    float s = exp(-dot(d, d) / (radius * radius)) * (0.03 + speed * 0.22);
 
     vec4 c = prev;
     c.rgb += uColor * s;
@@ -113,7 +113,7 @@ export class PostFX {
         uMouse: { value: new THREE.Vector2(-10, -10) },
         uMouseVel: { value: new THREE.Vector2() },
         uColor: { value: new THREE.Color() },
-        uDecay: { value: 0.965 },
+        uDecay: { value: 0.90 },
         uTime: { value: 0 },
         uAspect: { value: 1 },
       },
@@ -188,7 +188,7 @@ export class PostFX {
     fu.uMouse.value.copy(this.mouse);
     fu.uMouseVel.value.copy(this.mouseVel);
     fu.uTime.value = time;
-    fu.uDecay.value = Math.pow(0.965, dt * 60);
+    fu.uDecay.value = Math.pow(0.90, dt * 60);
     this.quad.material = this.fluidMat;
     r.setRenderTarget(this.fluidB);
     r.render(this.quadScene, this.quadCam);
