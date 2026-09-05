@@ -7,8 +7,38 @@
 <title>Joytirmoy Halder · Web Engineer — WordPress & WooCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="three/motion.css" />
+
+<!-- Motion mode detection (runs before script.js). Forces: ?motion=webgl or ?motion=canvas -->
+<script>
+(function () {
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var small = window.innerWidth < 768;
+  var gl = false;
+  try {
+    var c = document.createElement('canvas');
+    gl = !!c.getContext('webgl2'); // three.js r163+ requires WebGL2
+  } catch (e) {}
+  var force = /[?&]motion=(webgl|canvas)/.exec(location.search);
+  var mode = (!reduce && !small && gl) ? 'webgl' : 'canvas';
+  if (force) mode = force[1];
+  window.__motion = { mode: mode, reduce: reduce };
+  document.documentElement.setAttribute('data-motion', mode);
+})();
+</script>
+
+<!-- three.js, pinned & served from jsDelivr (no build step; works on GitHub Pages) -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
 </head>
 <body>
 
@@ -36,7 +66,8 @@
   <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
 </svg>
 
-<!-- Animated background canvas -->
+<!-- Animated background: WebGL layer (three.js) with 2D canvas fallback -->
+<canvas id="three-canvas" aria-hidden="true"></canvas>
 <canvas id="bg-canvas" aria-hidden="true"></canvas>
 <div class="grid-overlay" aria-hidden="true"></div>
 
@@ -577,20 +608,26 @@
   <div class="design-intro" data-reveal>
     <p>I currently oversee the development, maintenance, and technical optimization for a diverse portfolio of live production environments.</p>
   </div>
-  <div class="infra-grid">
-    <a href="https://a3sports.com.my" target="_blank" class="infra-link" data-tilt data-reveal>a3sports.com.my</a>
-    <a href="https://c4a-ig.com" target="_blank" class="infra-link" data-tilt data-reveal>c4a-ig.com</a>
-    <a href="https://a3cricket.eu" target="_blank" class="infra-link" data-tilt data-reveal>a3cricket.eu</a>
-    <a href="https://minjiasia.com" target="_blank" class="infra-link" data-tilt data-reveal>minjiasia.com</a>
-    <a href="https://aggressiveroi.com" target="_blank" class="infra-link" data-tilt data-reveal>aggressiveroi.com</a>
-    <a href="https://raasbiotech.com" target="_blank" class="infra-link" data-tilt data-reveal>raasbiotech.com</a>
-    <a href="https://theglobalsync.com" target="_blank" class="infra-link" data-tilt data-reveal>theglobalsync.com</a>
-    <a href="https://publicaward.com.my" target="_blank" class="infra-link" data-tilt data-reveal>publicaward.com.my</a>
-    <a href="https://salesninja.asia" target="_blank" class="infra-link" data-tilt data-reveal>salesninja.asia</a>
-    <a href="https://netragrowth.com" target="_blank" class="infra-link" data-tilt data-reveal>netragrowth.com</a>
-    <a href="https://globalpiks.com" target="_blank" class="infra-link" data-tilt data-reveal>globalpiks.com</a>
-    <a href="https://brewhaus.coffee" target="_blank" class="infra-link" data-tilt data-reveal>brewhaus.coffee</a>
-    <a href="https://hustlers-hive.com" target="_blank" class="infra-link" data-tilt data-reveal>hustlers-hive.com</a>
+  <div class="infra-layout">
+    <div class="infra-grid">
+      <a href="https://a3sports.com.my" target="_blank" class="infra-link" data-tilt data-reveal>a3sports.com.my</a>
+      <a href="https://c4a-ig.com" target="_blank" class="infra-link" data-tilt data-reveal>c4a-ig.com</a>
+      <a href="https://a3cricket.eu" target="_blank" class="infra-link" data-tilt data-reveal>a3cricket.eu</a>
+      <a href="https://minjiasia.com" target="_blank" class="infra-link" data-tilt data-reveal>minjiasia.com</a>
+      <a href="https://aggressiveroi.com" target="_blank" class="infra-link" data-tilt data-reveal>aggressiveroi.com</a>
+      <a href="https://raasbiotech.com" target="_blank" class="infra-link" data-tilt data-reveal>raasbiotech.com</a>
+      <a href="https://theglobalsync.com" target="_blank" class="infra-link" data-tilt data-reveal>theglobalsync.com</a>
+      <a href="https://publicaward.com.my" target="_blank" class="infra-link" data-tilt data-reveal>publicaward.com.my</a>
+      <a href="https://salesninja.asia" target="_blank" class="infra-link" data-tilt data-reveal>salesninja.asia</a>
+      <a href="https://netragrowth.com" target="_blank" class="infra-link" data-tilt data-reveal>netragrowth.com</a>
+      <a href="https://globalpiks.com" target="_blank" class="infra-link" data-tilt data-reveal>globalpiks.com</a>
+      <a href="https://brewhaus.coffee" target="_blank" class="infra-link" data-tilt data-reveal>brewhaus.coffee</a>
+      <a href="https://hustlers-hive.com" target="_blank" class="infra-link" data-tilt data-reveal>hustlers-hive.com</a>
+    </div>
+    <!-- Globe is rendered by three.js on the fixed WebGL layer, anchored to this stage -->
+    <div class="globe-stage" id="globeStage" aria-hidden="true">
+      <div class="globe-caption">Dhaka → 13 production regions · hover a domain</div>
+    </div>
   </div>
 </section>
 
@@ -654,5 +691,25 @@
 </footer>
 
 <script src="script.js"></script>
+
+<!-- Lazy-load the three.js motion layer. Any failure (old browser, blocked CDN,
+     no WebGL) fires scene:failed and script.js keeps the original 2D canvas. -->
+<script type="module">
+  if (window.__motion && window.__motion.mode === 'webgl') {
+    let settled = false;
+    const fail = (why) => {
+      if (settled) return;
+      settled = true;
+      document.dispatchEvent(new CustomEvent('scene:failed', { detail: why }));
+    };
+    document.addEventListener('scene:ready', () => { settled = true; }, { once: true });
+    document.addEventListener('scene:failed', () => { settled = true; }, { once: true });
+    // If the CDN hangs, don't leave the page without any background
+    const timer = setTimeout(() => fail('timeout'), 7000);
+    import('./three/scene.js')
+      .then(() => clearTimeout(timer))
+      .catch((err) => { clearTimeout(timer); console.warn('[motion] import failed', err); fail(String(err)); });
+  }
+</script>
 </body>
 </html>

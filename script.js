@@ -1,3 +1,6 @@
+/* ============ Motion mode (set by inline script in <head>) ============ */
+const MOTION_MODE = (window.__motion && window.__motion.mode) || 'canvas';
+
 /* ============ Custom cursor ============ */
 const dot = document.querySelector('.cursor-dot');
 const ring = document.querySelector('.cursor-ring');
@@ -149,111 +152,138 @@ if (menuBtn && navLinks) {
   });
 }
 
-/* ============ Particle background ============ */
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
-let dpr = Math.min(window.devicePixelRatio || 1, 2);
+/* ============ Particle background (2D canvas fallback) ============
+ * This is the original background. It runs immediately when the motion mode
+ * is 'canvas' (reduced motion, small screens, no WebGL) and as a fallback if
+ * the three.js layer fails to load (scene:failed).
+ */
+let canvasParticlesStarted = false;
+let canvasParticlesRaf = 0;
 
-function resize() {
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  canvas.style.width = window.innerWidth + 'px';
-  canvas.style.height = window.innerHeight + 'px';
-  ctx.scale(dpr, dpr);
-}
-resize();
-window.addEventListener('resize', () => {
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+function startCanvasParticles() {
+  if (canvasParticlesStarted) return;
+  canvasParticlesStarted = true;
+
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resize() {
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.scale(dpr, dpr);
+  }
   resize();
+  window.addEventListener('resize', () => {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    resize();
+    initParticles();
+  });
+
+  function getAccentColors() {
+    const styles = getComputedStyle(root);
+    return [
+      styles.getPropertyValue('--accent').trim(),
+      styles.getPropertyValue('--accent-2').trim(),
+      styles.getPropertyValue('--accent-3').trim(),
+    ];
+  }
+
+  function initParticles() {
+    const count = Math.min(70, Math.floor((window.innerWidth * window.innerHeight) / 22000));
+    particles = [];
+    const colors = getAccentColors();
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 1.6 + 0.4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+  }
   initParticles();
-});
 
-function getAccentColors() {
-  const styles = getComputedStyle(root);
-  return [
-    styles.getPropertyValue('--accent').trim(),
-    styles.getPropertyValue('--accent-2').trim(),
-    styles.getPropertyValue('--accent-3').trim(),
-  ];
-}
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  window.addEventListener('mousemove', (e) => {
+    mx = e.clientX; my = e.clientY;
+  });
 
-function initParticles() {
-  const count = Math.min(70, Math.floor((window.innerWidth * window.innerHeight) / 22000));
-  particles = [];
-  const colors = getAccentColors();
-  for (let i = 0; i < count; i++) {
-    particles.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      r: Math.random() * 1.6 + 0.4,
-      color: colors[Math.floor(Math.random() * colors.length)],
-    });
-  }
-}
-initParticles();
+  function tick() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-let mx = window.innerWidth / 2, my = window.innerHeight / 2;
-window.addEventListener('mousemove', (e) => {
-  mx = e.clientX; my = e.clientY;
-});
+    // Update and draw particles
+    for (const p of particles) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > window.innerWidth) p.vx *= -1;
+      if (p.y < 0 || p.y > window.innerHeight) p.vy *= -1;
 
-function tick() {
-  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = 0.7;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-  // Update and draw particles
-  for (const p of particles) {
-    p.x += p.vx; p.y += p.vy;
-    if (p.x < 0 || p.x > window.innerWidth) p.vx *= -1;
-    if (p.y < 0 || p.y > window.innerHeight) p.vy *= -1;
-
-    ctx.beginPath();
-    ctx.fillStyle = p.color;
-    ctx.globalAlpha = 0.7;
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Connect close particles
-  ctx.globalAlpha = 1;
-  for (let i = 0; i < particles.length; i++) {
-    for (let j = i + 1; j < particles.length; j++) {
-      const a = particles[i], b = particles[j];
-      const dx = a.x - b.x, dy = a.y - b.y;
-      const d = Math.sqrt(dx * dx + dy * dy);
-      if (d < 130) {
-        ctx.beginPath();
-        ctx.strokeStyle = a.color;
-        ctx.globalAlpha = (1 - d / 130) * 0.18;
-        ctx.lineWidth = 0.6;
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
+    // Connect close particles
+    ctx.globalAlpha = 1;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i], b = particles[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 130) {
+          ctx.beginPath();
+          ctx.strokeStyle = a.color;
+          ctx.globalAlpha = (1 - d / 130) * 0.18;
+          ctx.lineWidth = 0.6;
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
       }
     }
-  }
 
-  // Mouse repel
-  for (const p of particles) {
-    const dx = p.x - mx, dy = p.y - my;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    if (d < 120) {
-      const force = (120 - d) / 120;
-      p.x += (dx / d) * force * 0.8;
-      p.y += (dy / d) * force * 0.8;
+    // Mouse repel
+    for (const p of particles) {
+      const dx = p.x - mx, dy = p.y - my;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 120) {
+        const force = (120 - d) / 120;
+        p.x += (dx / d) * force * 0.8;
+        p.y += (dy / d) * force * 0.8;
+      }
     }
+
+    ctx.globalAlpha = 1;
+    canvasParticlesRaf = requestAnimationFrame(tick);
   }
+  tick();
 
-  ctx.globalAlpha = 1;
-  requestAnimationFrame(tick);
+  /* Re-init particles on theme change so colors match */
+  const themeObs = new MutationObserver(() => initParticles());
+  themeObs.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 }
-tick();
 
-/* Re-init particles on theme change so colors match */
-const themeObs = new MutationObserver(() => initParticles());
-themeObs.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+function stopCanvasParticles() {
+  if (!canvasParticlesStarted) return;
+  cancelAnimationFrame(canvasParticlesRaf);
+  canvasParticlesStarted = false;
+}
+
+if (MOTION_MODE === 'canvas') {
+  startCanvasParticles();
+} else {
+  // WebGL requested: wait for the three.js layer; fall back if it fails
+  document.addEventListener('scene:failed', () => startCanvasParticles());
+  // If WebGL arrives late (after a timeout fallback), hand over cleanly
+  document.addEventListener('scene:ready', () => stopCanvasParticles());
+}
 
 /* ============ Smooth anchor offset ============ */
 document.querySelectorAll('a[href^="#"]').forEach(link => {
@@ -282,13 +312,21 @@ window.addEventListener('load', () => {
   });
 });
 
-/* ============ Preloader ============ */
+/* ============ Preloader ============
+ * In WebGL mode the bar parks at ~88% until the three.js scene reports
+ * ready (or fails), so the reveal lines up with the real first frame.
+ */
 const preloader = document.getElementById('preloader');
 const plFill = preloader?.querySelector('.preloader-fill');
 const plPct = document.getElementById('plPct');
 let plProgress = 0;
+let plSceneSettled = MOTION_MODE !== 'webgl';
+document.addEventListener('scene:ready', () => { plSceneSettled = true; }, { once: true });
+document.addEventListener('scene:failed', () => { plSceneSettled = true; }, { once: true });
+
 const plTick = setInterval(() => {
-  plProgress += Math.random() * 18 + 6;
+  const cap = plSceneSettled ? 100 : 88;
+  plProgress = Math.min(plProgress + Math.random() * 18 + 6, cap);
   if (plProgress >= 100) {
     plProgress = 100;
     clearInterval(plTick);
@@ -299,7 +337,10 @@ const plTick = setInterval(() => {
 }, 110);
 
 /* Failsafe: hide preloader after 4s no matter what */
-setTimeout(() => preloader?.classList.add('done'), 4000);
+setTimeout(() => {
+  plSceneSettled = true;
+  preloader?.classList.add('done');
+}, 4000);
 
 /* ============ Cursor-follow spotlight ============ */
 const spotlight = document.getElementById('spotlight');
@@ -376,6 +417,8 @@ document.querySelectorAll('[data-scramble]').forEach(el => {
   setInterval(() => {
     idx = (idx + 1) % alts.length;
     scrambler.setText(alts[idx]);
+    // Let the WebGL hero object pulse in sync with the word swap
+    document.dispatchEvent(new CustomEvent('scramble:swap', { detail: alts[idx] }));
   }, 3500);
   el.addEventListener('mouseenter', () => {
     scrambler.setText(original);
@@ -449,6 +492,8 @@ document.addEventListener('keydown', (e) => {
       m.style.animation = `pl-bounce 0.6s ${i * 0.1}s var(--ease)`;
       setTimeout(() => m.style.animation = '', 1200 + i * 100);
     });
+    // WebGL particles shatter & reassemble
+    document.dispatchEvent(new CustomEvent('portfolio:easteregg'));
   }
 });
 
@@ -527,7 +572,7 @@ emailPop?.querySelectorAll('button[data-action]').forEach(btn => {
     e.stopPropagation();
     const action = btn.dataset.action;
     if (action === 'gmail') {
-      const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(EMAIL)}&su=${encodeURIComponent("Project inquiry")}`;
+      const url = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(EMAIL) + '&su=' + encodeURIComponent('Project inquiry');
       window.open(url, '_blank', 'noopener,noreferrer');
       showToast('Opening Gmail in a new tab…');
     } else if (action === 'mailto') {
@@ -582,5 +627,3 @@ document.querySelectorAll('.mock-cta').forEach(btn => {
     }, 1150);
   });
 });
-
-
