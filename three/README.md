@@ -9,12 +9,12 @@ GitHub Pages.
 | File | Purpose |
 | --- | --- |
 | `scene.js` | Bootstrap: renderer, camera, input, resize, render loop. Dispatches `scene:ready` / `scene:failed`. |
-| `particles.js` | ~2 800-point morphing particle field. Re-forms per section (cloud → wave → lattice → terrain → helix → globe → ring), repels from the cursor, shatters on the `design` easter egg. |
-| `globe.js` | Wireframe globe anchored to `#globeStage` with a marker + arc per production domain. Hover a pill ⇄ marker lights up. **Edit `REGIONS` here.** |
+| `particles.js` | ~2 200-point morphing particle field. Re-forms per section (cloud → wave → floor → terrain → helix → wave → ring), repels from the cursor, shatters on the `design` easter egg. Dimmed behind the text column (`CONFIG.columnDim`) and per section (`SECTION_SHAPES[].opacity`). |
+| `globe.js` | Dotted-world-map globe drawn in its own scene/camera, clipped to `#globeView` (second render pass, so the cursor FX never touch it). Land dots come from `world-atlas@2/land-110m.json` (jsDelivr) and assemble on first view. Hover a pill → globe turns to the route, arc draws in, region lights up, labels + caption update, same-region pills half-light. **Edit `REGIONS` here.** |
 | `objects.js` | Hero wireframe icosahedron (pulses on each text-scramble swap) and the contact-section orbit rings. |
 | `post.js` | Fluid cursor trail (half-res ping-pong sim), scroll-velocity chromatic aberration, grain, final composite. |
 | `util.js` | Theme colour reading (`--accent*` CSS vars), DOM-rect → world-space mapping, easing helpers. |
-| `motion.css` | Additive styles: `#three-canvas`, `.infra-layout`, `.globe-stage`, `.infra-link.is-lit`. |
+| `motion.css` | Additive styles: `#three-canvas`, `.infra-layout`, `.globe-stage` / `.globe-view` / `.globe-caption` / `.globe-label`, `.infra-link.is-lit` / `.is-kin`, `.infra-grid.is-focusing`. |
 
 ## How it degrades
 
@@ -30,9 +30,10 @@ Force a mode for testing: `?motion=webgl` or `?motion=canvas`.
 ## Tuning knobs
 
 - `scene.js` → `SETTINGS`: DPR cap, toggles for post-FX / globe / hero object / orbits.
-- `particles.js` → `CONFIG`: particle count, follow speed, cursor repulsion, burst damping.
-- `particles.js` → `SECTION_SHAPES`: which shape each section id gets.
-- `globe.js` → `HOME` / `REGIONS`: **lat/lng are placeholders** — set them to the real hosting regions. `domain` must match the pill text.
+- `particles.js` → `CONFIG`: particle count, size, `opacity` / `opacityLight`, `columnDim` (brightness behind the text column), cursor repulsion, burst damping.
+- `particles.js` → `SECTION_SHAPES`: which shape each section id gets, plus optional `shift` (x/y as viewport fraction) and `opacity`.
+- `globe.js` → `HOME` / `REGIONS`: **lat/lng are placeholders** — set them to the real hosting regions. `domain` must match the pill text; domains with the same `region` share a marker/arc.
+- `globe.js` → `GLOBE`: `dotSpacingDeg` (map density), `dotSize`, `fit` (globe size inside the ring), `idleSway` (set `0` for a perfectly still globe), `idleTilt`, `assembleSeconds` (fly-in duration), `hotRadius` (how much land lights up on hover).
 - `post.js` → `uDecay` (trail length), `uGrain`, aberration strength (`0.012`).
 - `index.html` head script → `innerWidth < 768` mobile cutoff.
 
