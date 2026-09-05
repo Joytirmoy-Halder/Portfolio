@@ -53,7 +53,9 @@ function boot() {
 
   const particles = new ParticleField(scene, camera, theme);
   particles.setPixelRatio(dpr, window.innerHeight);
-  const globe = SETTINGS.enableGlobe ? new Globe(scene, camera, theme) : null;
+  // The globe has its own scene/camera and is drawn as a second pass into the
+  // #globeView box (see globe.js) so the cursor FX never touch it.
+  const globe = SETTINGS.enableGlobe ? new Globe(theme) : null;
   const hero = SETTINGS.enableHeroObject ? new HeroObject(scene, camera, theme) : null;
   const orbits = SETTINGS.enableContactOrbits ? new ContactOrbits(scene, camera, theme) : null;
   const post = SETTINGS.enablePostFX ? new PostFX(renderer, theme) : null;
@@ -116,21 +118,19 @@ function boot() {
     lastScroll = sy;
     scrollVel = ease(scrollVel, inst, inst > scrollVel ? 20 : 4, dt);
 
-    // cursor in world & uv space
-    if (mouse.x > -9000) {
+    // cursor in world & uv space (muted while the pointer is over the globe box)
+    const overGlobe = globe ? globe.containsClient(mouse.x, mouse.y) : false;
+    if (mouse.x > -9000 && !overGlobe) {
       const w = viewport.clientToWorld(mouse.x, mouse.y);
       particles.setMouseWorld(w.x, w.y);
       hero?.setMouse(mouse.nx, mouse.ny);
-      globe?.setPointer(mouse.nx, mouse.ny);
       post?.setMouseUv(mouse.x / window.innerWidth, 1 - mouse.y / window.innerHeight);
     } else {
       particles.setMouseWorld(9999, 9999);
-      globe?.setPointer(9999, 9999);
       post?.setMouseUv(-10, -10);
     }
 
     particles.update(time, dt);
-    globe?.update(time, dt);
     hero?.update(time, dt);
     orbits?.update(time, dt);
 
@@ -141,6 +141,9 @@ function boot() {
       renderer.setRenderTarget(null);
       renderer.render(scene, camera);
     }
+
+    // Second pass: the globe, clipped to its own box, drawn over the composite
+    globe?.render(renderer, time, dt);
   }
 
   document.addEventListener('visibilitychange', () => {
