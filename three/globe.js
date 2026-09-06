@@ -32,13 +32,13 @@ export const REGIONS = [
   { domain: 'a3cricket.eu',      region: 'Frankfurt',    lat: 50.11,  lng: 8.68 },
   { domain: 'minjiasia.com',     region: 'Singapore',    lat: 1.35,   lng: 103.82 },
   { domain: 'aggressiveroi.com', region: 'Kuala Lumpur', lat: 3.14,   lng: 101.69 },
-  { domain: 'raasbiotech.com',   region: 'Singapore',    lat: 1.35,   lng: 103.82 },
+  { domain: 'raasbiotech.com',   region: 'Selangor',     lat: 3.07,   lng: 101.52 },
   { domain: 'theglobalsync.com', region: 'London',       lat: 51.5,   lng: -0.12 },
   { domain: 'publicaward.com.my',region: 'Kuala Lumpur', lat: 3.14,   lng: 101.69 },
   { domain: 'salesninja.asia',   region: 'Singapore',    lat: 1.35,   lng: 103.82 },
-  { domain: 'netragrowth.com',   region: 'Kuala Lumpur', lat: 3.14,   lng: 101.69 },
-  { domain: 'globalpiks.com',    region: 'London',       lat: 51.5,   lng: -0.12 },
-  { domain: 'brewhaus.coffee',   region: 'Sydney',       lat: -33.87, lng: 151.21 },
+  { domain: 'netragrowth.com',   region: 'Ashburn',      lat: 39.04,  lng: -77.49 },
+  { domain: 'globalpiks.com',    region: 'Dhaka',        lat: 23.81,  lng: 90.41 },
+  { domain: 'brewhaus.coffee',   region: 'Dhaka',        lat: 23.81,  lng: 90.41 },
   { domain: 'hustlers-hive.com', region: 'Ashburn',      lat: 39.04,  lng: -77.49 },
 ];
 
@@ -245,8 +245,12 @@ export class Globe {
       byName.get(r.region).domains.push(r.domain);
     });
     this.regions = Array.from(byName.values());
-    this.regions.forEach((r) => { r.vec = latLngToVec3(r.lat, r.lng); });
     this.homeVec = latLngToVec3(HOME.lat, HOME.lng);
+    this.regions.forEach((r) => {
+      r.vec = latLngToVec3(r.lat, r.lng);
+      // A region sitting on Dhaka itself gets no arc: hovering it lights up home instead
+      r.isHome = r.vec.distanceTo(this.homeVec) < 0.02;
+    });
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(GLOBE.fov, 1, 0.1, 50);
@@ -335,11 +339,14 @@ export class Globe {
     this.regions.forEach((reg) => {
       reg.dot = new THREE.Mesh(new THREE.SphereGeometry(0.012, 10, 10), new THREE.MeshBasicMaterial({ color: theme.accent, transparent: true, opacity: 0.9 }));
       reg.dot.position.copy(reg.vec).multiplyScalar(1.003);
+      reg.dot.visible = !reg.isHome; // home already has its own marker
       g.add(reg.dot);
 
       reg.ring = this.makeRing(0.022, 0.028, theme.accent3, reg.vec);
       reg.ring.material.opacity = 0;
       g.add(reg.ring);
+
+      if (reg.isHome) return; // no route to draw
 
       reg.curve = new ArcCurve(this.homeVec, reg.vec);
       reg.thin = new THREE.Mesh(
@@ -448,6 +455,7 @@ export class Globe {
     this.regions.forEach((r) => {
       r.dot.material.color.copy(theme.accent);
       r.ring.material.color.copy(theme.accent3);
+      if (!r.thin) return;
       r.thin.material.color.copy(theme.accent2);
       r.thick.material.color.copy(theme.accent3);
       r.packet.material.color.copy(theme.accent3);
@@ -485,7 +493,9 @@ export class Globe {
     if (next != null) {
       const reg = this.regions[next];
       const n = reg.domains.length;
-      this.labelDest.innerHTML = `<b>${reg.name}</b><span>${n} live ${n === 1 ? 'site' : 'sites'}</span>`;
+      this.labelDest.innerHTML = reg.isHome
+        ? `<b>${reg.name}</b><span>hosted locally · ${n} live ${n === 1 ? 'site' : 'sites'}</span>`
+        : `<b>${reg.name}</b><span>${n} live ${n === 1 ? 'site' : 'sites'}</span>`;
     }
   }
 
@@ -546,16 +556,18 @@ export class Globe {
     lu.uHotAmt.value = ease(lu.uHotAmt.value, reg ? draw : 0, 8, dt);
 
     // Home pulse
-    const hp = 0.5 + 0.5 * Math.sin(time * 2.0);
-    this.homeRing.scale.setScalar(1 + hp * 0.6);
-    this.homeRing.material.opacity = 0.42 - hp * 0.22;
-    this.homeGlow.scale.setScalar(0.13 + hp * 0.03);
+    const homeOn = !!(reg && reg.isHome);
+    const hp = 0.5 + 0.5 * Math.sin(time * (homeOn ? 3.2 : 2.0));
+    this.homeRing.scale.setScalar((homeOn ? 1.6 : 1) + hp * (homeOn ? 1.4 : 0.6));
+    this.homeRing.material.opacity = homeOn ? 0.9 - hp * 0.5 : 0.42 - hp * 0.22;
+    this.homeGlow.scale.setScalar(ease(this.homeGlow.scale.x, homeOn ? 0.3 : 0.13 + hp * 0.03, 8, dt));
 
     // Regions
     const segs = 64;
     this.regions.forEach((r, i) => {
       const on = reg === r;
       const dim = reg && !on;
+      if (r.isHome) { r.ring.material.opacity = 0; return; }
       r.thin.material.opacity = ease(r.thin.material.opacity, on ? 0 : dim ? 0.05 : 0.16, 8, dt);
       r.thick.geometry.setDrawRange(0, on ? Math.floor(draw * segs) * 36 : 0);
       r.thick.material.opacity = on ? Math.min(1, this.drawT * 4) * 0.95 : 0;
@@ -600,7 +612,7 @@ export class Globe {
       el.classList.add('is-on');
     };
     this.group.updateMatrixWorld();
-    place(this.labelHome, this.homeVec, this.landMat.uniforms.uReveal.value > 0.9);
+    place(this.labelHome, this.homeVec, this.landMat.uniforms.uReveal.value > 0.9 && !(reg && reg.isHome));
     place(this.labelDest, reg ? reg.vec : this.homeVec, !!reg && draw > 0.6);
   }
 
@@ -632,7 +644,7 @@ export class Globe {
     renderer.setScissorTest(true);
     renderer.setScissor(x, y, w, h);
     renderer.setViewport(x, y, w, h);
-    renderer.clearDepth();
+    renderer.clear(true, true, false); // colour + depth: background particles / trail never show in the globe window
     renderer.render(this.scene, this.camera);
     renderer.setScissorTest(false);
     renderer.setScissor(0, 0, W, H);

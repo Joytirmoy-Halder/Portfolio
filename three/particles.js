@@ -98,10 +98,13 @@ const shapes = {
     return [(r() - 0.5) * W * 1.15, (r() - 0.5) * H * 1.15, (r() - 0.5) * 6];
   },
   wave(i, n, r, W, H) {
+    // Four rolling bands stacked top-to-bottom so the field fills the viewport
+    const band = i % 4;
     const x = (r() - 0.5) * W * 1.1;
     const z = (r() - 0.5) * 6;
-    const y = Math.sin(x * 0.9) * 0.6 + Math.cos(z * 1.3) * 0.4 + (r() - 0.5) * 0.3;
-    return [x, y - H * 0.3, z];
+    const base = (band / 3 - 0.5) * H * 0.85;
+    const y = base + Math.sin(x * 0.9 + band * 1.7) * 0.55 + Math.cos(z * 1.3) * 0.35 + (r() - 0.5) * 0.3;
+    return [x, y, z];
   },
   lattice(i, n, r, W, H) {
     const side = Math.ceil(Math.cbrt(n));
@@ -111,19 +114,22 @@ const shapes = {
     return [c(gx), c(gy), c(gz) - 1];
   },
   floor(i, n, r, W, H) {
-    // Perspective grid receding under the content
-    const cols = Math.ceil(Math.sqrt(n * 2.4));
+    // Tilted perspective grid: near edge at the bottom, receding up and away
+    const cols = Math.ceil(Math.sqrt(n * 1.6));
     const rows = Math.ceil(n / cols);
     const gx = i % cols, gz = Math.floor(i / cols);
-    const x = (gx / (cols - 1) - 0.5) * W * 1.5;
-    const z = (gz / Math.max(1, rows - 1) - 0.5) * 9;
-    const y = -H * 0.38 + Math.sin(x * 0.7 + z * 0.5) * 0.1;
+    const v = gz / Math.max(1, rows - 1);
+    const x = (gx / (cols - 1) - 0.5) * W * 1.4;
+    const y = (v - 0.5) * H * 0.95 + Math.sin(x * 0.7 + v * 4) * 0.1;
+    const z = 2 - v * 8;
     return [x, y, z];
   },
   terrain(i, n, r, W, H) {
+    // Three terrain layers (low / mid / high) instead of one strip along the bottom
+    const layer = i % 3;
     const x = (r() - 0.5) * W * 1.2;
     const z = (r() - 0.5) * 8;
-    const y = -H * 0.28 + Math.sin(x * 1.4) * Math.cos(z * 0.9) * 0.55 + Math.sin(z * 1.8 + x) * 0.25;
+    const y = (layer - 1) * H * 0.34 + Math.sin(x * 1.4 + layer) * Math.cos(z * 0.9) * 0.5 + Math.sin(z * 1.8 + x) * 0.22;
     return [x, y, z];
   },
   helix(i, n, r, W, H) {
