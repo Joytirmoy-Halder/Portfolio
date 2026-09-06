@@ -36,7 +36,7 @@ export const REGIONS = [
   { domain: 'theglobalsync.com', region: 'London',       lat: 51.5,   lng: -0.12 },
   { domain: 'publicaward.com.my',region: 'Kuala Lumpur', lat: 3.14,   lng: 101.69 },
   { domain: 'salesninja.asia',   region: 'Singapore',    lat: 1.35,   lng: 103.82 },
-  { domain: 'netragrowth.com',   region: 'Ashburn',      lat: 39.04,  lng: -77.49 },
+  { domain: 'netragrowth.com',   region: 'Kuala Lumpur', lat: 3.14,   lng: 101.69 },
   { domain: 'globalpiks.com',    region: 'London',       lat: 51.5,   lng: -0.12 },
   { domain: 'brewhaus.coffee',   region: 'Sydney',       lat: -33.87, lng: 151.21 },
   { domain: 'hustlers-hive.com', region: 'Ashburn',      lat: 39.04,  lng: -77.49 },
