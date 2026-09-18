@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { Viewport, smoothstep, clamp, lerp } from './util.js';
 
 export const CONFIG = {
-  count: 2200,           // particle count (lower for weaker machines)
+  count: 1400,           // particle count (lower for weaker machines)
   followSpeed: 0.055,    // how quickly particles chase their target shape (0–1)
   repelRadius: 1.6,      // cursor repulsion radius, world units
   repelStrength: 0.9,    // cursor repulsion strength, world units
