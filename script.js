@@ -1,14 +1,38 @@
 /* ============ Motion mode (set by inline script in <head>) ============ */
 const MOTION_MODE = (window.__motion && window.__motion.mode) || 'canvas';
 
-/* ============ Cursor ============
- * The custom cursor (dot + ring) was removed; the native cursor is used.
- * mouseX/mouseY are kept for other effects.
- */
-let mouseX = 0, mouseY = 0;
+/* ============ Custom cursor ============ */
+const dot = document.querySelector('.cursor-dot');
+const ring = document.querySelector('.cursor-ring');
+
+let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+let ringX = mouseX, ringY = mouseY;
+let cursorMoved = false;
+
 document.addEventListener('mousemove', (e) => {
   mouseX = e.clientX;
   mouseY = e.clientY;
+  if (!cursorMoved) {
+    cursorMoved = true;
+    ringX = mouseX;
+    ringY = mouseY;
+  }
+  if (dot) dot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+});
+
+function animateRing() {
+  ringX += (mouseX - ringX) * 0.18;
+  ringY += (mouseY - ringY) * 0.18;
+  if (ring) ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+/* Hover state for interactive elements */
+const hoverables = document.querySelectorAll('a, button, [data-tilt], [data-magnetic], .infra-link');
+hoverables.forEach(el => {
+  el.addEventListener('mouseenter', () => ring && ring.classList.add('hover'));
+  el.addEventListener('mouseleave', () => ring && ring.classList.remove('hover'));
 });
 
 /* ============ Magnetic effect ============ */
@@ -345,7 +369,7 @@ class Scramble {
   constructor(el) {
     this.el = el;
     this.original = el.textContent;
-    this.chars = '!<>-_\\/[]{}—=+*^?#________';
+    this.chars = '!<>-_\\/[]{}~=+*^?#________';
     this.queue = [];
     this.frame = 0;
     this.running = false;
@@ -469,7 +493,7 @@ document.addEventListener('keydown', (e) => {
     document.body.style.animation = 'none';
     document.body.offsetHeight;
     document.body.style.animation = '';
-    showToast('🎨 Design mode unlocked — keep building.');
+    showToast('🎨 Design mode unlocked: keep building.');
     document.querySelectorAll('.mock').forEach((m, i) => {
       m.style.animation = `pl-bounce 0.6s ${i * 0.1}s var(--ease)`;
       setTimeout(() => m.style.animation = '', 1200 + i * 100);

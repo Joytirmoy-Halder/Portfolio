@@ -8,7 +8,7 @@ import { Viewport, smoothstep, clamp, lerp } from './util.js';
 
 export const CONFIG = {
   count: 400,           // particle count (lower for weaker machines)
-  followSpeed: 0.055,    // how quickly particles chase their target shape (0–1)
+  followSpeed: 0.055,    // how quickly particles chase their target shape (0-1)
   repelRadius: 1.6,      // cursor repulsion radius, world units
   repelStrength: 0.9,    // cursor repulsion strength, world units
   burstDamping: 0.9,     // velocity damping after an easter-egg burst
@@ -155,9 +155,9 @@ const shapes = {
 };
 
 /* Which shape each section takes.
- * anchor  – DOM selector the shape follows (optional)
- * shift   – [x, y] offset as a fraction of viewport width/height (optional)
- * opacity – per-section brightness multiplier (optional, default 1)
+ * anchor  - DOM selector the shape follows (optional)
+ * shift   - [x, y] offset as a fraction of viewport width/height (optional)
+ * opacity - per-section brightness multiplier (optional, default 1)
  */
 const SECTION_SHAPES = [
   { id: 'home',           shape: 'cloud',   opacity: 0.9 },

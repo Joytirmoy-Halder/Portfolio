@@ -1,12 +1,12 @@
-/* ============ Infrastructure globe — dotted world map ============
+/* ============ Infrastructure globe - dotted world map ============
  * Rendered in its OWN scene + camera into the #globeView box (scissor pass
  * after the main composite), so it:
  *   - is a perfect circle (no wide-angle distortion from the background cam),
  *   - is never touched by the cursor trail / particle repulsion,
  *   - always fits exactly inside the dashed ring, above the caption.
  *
- * Land = ~4–5k static dots sampled from Natural Earth (world-atlas
- * `land-110m` TopoJSON, fetched from jsDelivr — the same CDN three.js itself
+ * Land = ~4-5k static dots sampled from Natural Earth (world-atlas
+ * `land-110m` TopoJSON, fetched from jsDelivr - the same CDN three.js itself
  * comes from). The dots fly in and assemble into the map the first time the
  * section scrolls into view, then stay put. No cursor interaction inside.
  *
