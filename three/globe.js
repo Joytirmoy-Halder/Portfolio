@@ -32,6 +32,8 @@ export const REGIONS = [
   { domain: 'a3cricket.eu',      region: 'Frankfurt',    lat: 50.11,  lng: 8.68 },
   { domain: 'minjiasia.com',     region: 'Singapore',    lat: 1.35,   lng: 103.82 },
   { domain: 'aggressiveroi.com', region: 'Kuala Lumpur', lat: 3.14,   lng: 101.69 },
+  { domain: 'afracompanyltd.com', region: 'Riyadh',        lat: 24.71,  lng: 46.67 },
+
   { domain: 'raasbiotech.com',   region: 'Selangor',     lat: 3.07,   lng: 101.52 },
   { domain: 'theglobalsync.com', region: 'London',       lat: 51.5,   lng: -0.12 },
   { domain: 'publicaward.com.my',region: 'Kuala Lumpur', lat: 3.14,   lng: 101.69 },
